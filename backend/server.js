@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 5000;
 const path = require('path');
 
 app.use(cors({
-  origin: ['https://olp1.vercel.app', 'http://localhost:5000'],
+  origin: ['http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json());
@@ -22,8 +22,13 @@ app.get('/', (req, res) => {
   res.send('Online Learning Platform API');
 });
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Failed to connect to MongoDB:', err);
+    process.exit(1);
   });
-}); 
