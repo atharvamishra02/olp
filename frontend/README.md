@@ -5,6 +5,8 @@ so for project install nodemodules for both frontend and backend for ur computer
 to start frontend - npm run dev
 for backend - node server.js
 
+i made the frontend through vite framework.
+
 1. User Interaction (Frontend – React)
 Users visit the web app and interact with different pages like:
 
@@ -18,7 +20,7 @@ Dashboards (Student/Admin)
 
 They browse courses, log in, register, and enroll through a clean user interface built using React and styled with Tailwind CSS.
 
-2. Sending API Requests (Frontend → Backend)
+2. Sending API Requests (Frontend to Backend)
 All interactions that need data (like logging in or fetching courses) are done through Axios, which sends HTTP requests from the frontend to the backend.
 
 This is managed via a central api.js file where Axios is configured. It knows the backend server URL using an environment variable so you can easily switch between development and production.
@@ -55,7 +57,7 @@ For example, a student dashboard may show enrolled courses and progress.
 
 All state is managed inside React components or contexts.
 
-🛠 Backend (Node.js + Express)
+Backend (Node.js + Express)
 Models (models/): Define database structure (User, Course, Lesson, etc.).
 
 Routes (routes/): Handle different parts of the app:
