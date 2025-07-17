@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const cors = require('cors');
 const authenticateToken = require('../middleware/auth');
 const requireRole = require('../middleware/roles');
 const Course = require('../models/course');
