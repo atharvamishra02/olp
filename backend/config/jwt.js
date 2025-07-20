@@ -1,4 +1,5 @@
 module.exports = {
   secret: process.env.JWT_SECRET || 'supersecretkey',
-  expiresIn: '1d',
+  accessTokenExpiresIn: undefined, // or a short time like '15m'
+  refreshTokenExpiresIn: '7d', // or longer
 }; 

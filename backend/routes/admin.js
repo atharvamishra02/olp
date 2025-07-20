@@ -4,22 +4,36 @@ const authenticateToken = require('../middleware/auth');
 const requireRole = require('../middleware/roles');
 const Course = require('../models/course');
 const Lesson = require('../models/lesson');
+// Cloudinary integration
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
-const path = require('path');
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Set up Cloudinary storage for images and videos
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    let folder = 'uploads';
+    let resource_type = 'auto';
+    return {
+      folder,
+      resource_type,
+      allowed_formats: ['jpg', 'jpeg', 'png', 'mp4', 'mov'],
+      public_id: Date.now() + '-' + file.originalname.replace(/\s+/g, '_'),
+    };
+  },
+});
+const upload = multer({ storage });
 
 // All routes require admin authentication
 router.use(authenticateToken, requireRole('admin'));
-
-// Set up multer storage for video uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../uploads'));
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-const upload = multer({ storage });
 
 // CRUD for courses
 router.get('/courses', async (req, res) => {
@@ -35,7 +49,7 @@ router.get('/courses', async (req, res) => {
 // POST /api/admin/courses (with image upload)
 router.post('/courses', upload.single('image'), (req, res) => {
   const { title, description, published } = req.body;
-  const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+  const image = req.file ? req.file.path : undefined; // Cloudinary URL
   if (!title) return res.status(400).json({ message: 'Title required' });
   Course.createCourse(title, description, published, image)
     .then(() => res.json({ message: 'Course created' }))
@@ -45,7 +59,7 @@ router.post('/courses', upload.single('image'), (req, res) => {
 // PUT /api/admin/courses/:id (with image upload)
 router.put('/courses/:id', upload.single('image'), async (req, res) => {
   const { title, description, published } = req.body;
-  const image = req.file ? `/uploads/${req.file.filename}` : undefined;
+  const image = req.file ? req.file.path : undefined; // Cloudinary URL
   try {
     await Course.updateCourse(req.params.id, title, description, published, image);
     res.json({ message: 'Course updated' });
@@ -77,7 +91,7 @@ router.get('/courses/:courseId/lessons', async (req, res) => {
 // POST /api/admin/courses/:courseId/lessons (with video upload)
 router.post('/courses/:courseId/lessons', upload.single('video'), async (req, res) => {
   const { title, content } = req.body;
-  const video = req.file ? `/uploads/${req.file.filename}` : undefined;
+  const video = req.file ? req.file.path : undefined; // Cloudinary URL
   try {
     await Lesson.createLesson(req.params.courseId, title, content, video);
     res.json({ message: 'Lesson created' });
@@ -89,7 +103,7 @@ router.post('/courses/:courseId/lessons', upload.single('video'), async (req, re
 // PUT /api/admin/lessons/:id (with video upload)
 router.put('/lessons/:id', upload.single('video'), async (req, res) => {
   const { title, content } = req.body;
-  const video = req.file ? `/uploads/${req.file.filename}` : undefined;
+  const video = req.file ? req.file.path : undefined; // Cloudinary URL
   try {
     await Lesson.updateLesson(req.params.id, title, content, video);
     res.json({ message: 'Lesson updated' });
