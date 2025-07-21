@@ -31,6 +31,11 @@ app.get('/', (req, res) => {
   res.send('Online Learning Platform API (Running on Railway)');
 });
 
+// Catch-all for non-API routes
+app.get('*', (req, res) => {
+  res.status(404).send('API route not found');
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
