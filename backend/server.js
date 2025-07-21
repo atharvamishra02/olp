@@ -15,7 +15,7 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://olp2.up.railway.app/'],
+  origin: ['http://localhost:5173', 'https://olp2.up.railway.app'],
   credentials: true,
 }));
 app.use(express.json());
