@@ -74,6 +74,7 @@ const StudentDashboard = () => {
             {enrolledCourses.length === 0 && <div className="text-gray-500 col-span-full text-center">You are not enrolled in any courses.</div>}
             {enrolledCourses.map(enrollment => {
               const course = enrollment.course_id;
+              if (!course) return null;
               return (
                 <div key={enrollment._id} className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl shadow p-4 flex flex-col border border-transparent hover:border-blue-300 hover:shadow-lg transition relative">
                   {course && course.image && (
@@ -125,9 +126,9 @@ const StudentDashboard = () => {
                   <button
                     className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-1 px-3 rounded-lg shadow flex items-center gap-2 transition"
                     onClick={() => handleEnroll(course._id)}
-                    disabled={enrolledCourses.some(e => e._id === course._id)}
+                    disabled={enrolledCourses.some(e => e.course_id && e.course_id._id === course._id)}
                   >
-                    <FaPlusCircle /> {enrolledCourses.some(e => e._id === course._id) ? 'Enrolled' : 'Enroll'}
+                    <FaPlusCircle /> {enrolledCourses.some(e => e.course_id && e.course_id._id === course._id) ? 'Enrolled' : 'Enroll'}
                   </button>
                 </div>
               </div>

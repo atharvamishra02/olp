@@ -52,7 +52,7 @@ router.post('/courses', upload.single('image'), (req, res) => {
   const image = req.file ? req.file.path : undefined; // Cloudinary URL
   if (!title) return res.status(400).json({ message: 'Title required' });
   Course.createCourse(title, description, published, image)
-    .then(() => res.json({ message: 'Course created' }))
+    .then(course => res.status(201).json(course))
     .catch(err => res.status(500).json({ message: 'Error creating course' }));
 });
 

@@ -87,7 +87,7 @@ const AdminDashboard = () => {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || 'Failed to create course')
-      const courseId = data.courseId || (await (await fetch(`${API_PATH}/admin/courses`)).json()).find(c => c.title === title)?._id;
+      const courseId = data._id;
       if (!courseId) throw new Error('Could not retrieve course ID after creation.');
       // If lessons were added, submit them
       for (const lesson of courseLessons) {
