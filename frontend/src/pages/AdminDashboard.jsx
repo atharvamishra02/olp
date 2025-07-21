@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../api';
 import { FaChalkboardTeacher, FaBookOpen, FaPlusCircle, FaEdit, FaTrash, FaListUl } from 'react-icons/fa'
+
+const API_BASE = import.meta.env.MODE === 'development'
+  ? 'http://localhost:5000'
+  : 'https://adaptable-renewal.up.railway.app';
+
+const API_PATH = `${API_BASE}/api`;
 
 const AdminDashboard = () => {
   const [title, setTitle] = useState('')
@@ -27,7 +32,7 @@ const AdminDashboard = () => {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch(`/api/admin/courses?ts=${Date.now()}`, {
+      const res = await fetch(`${API_PATH}/admin/courses?ts=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();
@@ -39,7 +44,7 @@ const AdminDashboard = () => {
 
   const fetchLessons = async (courseId) => {
     try {
-      const res = await api.get(`/admin/courses/${courseId}/lessons`, {
+      const res = await fetch(`${API_PATH}/admin/courses/${courseId}/lessons`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setLessons(res.data);
@@ -73,7 +78,7 @@ const AdminDashboard = () => {
       formData.append('description', description);
       formData.append('published', published);
       if (image) formData.append('image', image);
-      const res = await fetch('/api/admin/courses', {
+      const res = await fetch(`${API_PATH}/admin/courses`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -82,6 +87,8 @@ const AdminDashboard = () => {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || 'Failed to create course')
+      const courseId = data.courseId || (await (await fetch(`${API_PATH}/admin/courses`)).json()).find(c => c.title === title)?._id;
+      if (!courseId) throw new Error('Could not retrieve course ID after creation.');
       // If lessons were added, submit them
       for (const lesson of courseLessons) {
         if (!lesson.title) continue;
@@ -89,7 +96,7 @@ const AdminDashboard = () => {
         lessonForm.append('title', lesson.title);
         lessonForm.append('content', lesson.content);
         if (lesson.video) lessonForm.append('video', lesson.video);
-        await fetch(`/api/admin/courses/${data.courseId}/lessons`, {
+        await fetch(`${API_PATH}/admin/courses/${courseId}/lessons`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -109,7 +116,7 @@ const AdminDashboard = () => {
   const handleDelete = async (courseId) => {
     setError(''); setSuccess('');
     try {
-      const res = await fetch(`/api/admin/courses/${courseId}`, {
+      const res = await fetch(`${API_PATH}/admin/courses/${courseId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -141,7 +148,7 @@ const AdminDashboard = () => {
       formData.append('description', editDescription);
       formData.append('published', editPublished);
       if (editImage) formData.append('image', editImage);
-      const res = await fetch(`/api/admin/courses/${editCourse._id}`, {
+      const res = await fetch(`${API_PATH}/admin/courses/${editCourse._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -174,21 +181,23 @@ const AdminDashboard = () => {
       formData.append('title', lessonTitle);
       formData.append('content', lessonContent);
       if (lessonVideo) formData.append('video', lessonVideo);
+      let res;
       if (lessonEditId) {
         // Edit lesson
-        await api.put(`/admin/lessons/${lessonEditId}`, formData, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'multipart/form-data',
-          },
+        res = await fetch(`${API_PATH}/admin/lessons/${lessonEditId}`, {
+          method: 'PUT',
+          body: formData,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
       } else {
         // Add lesson
-        await api.post(`/admin/courses/${lessonModalCourse._id}/lessons`, formData, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'multipart/form-data',
-          },
+        res = await fetch(`${API_PATH}/admin/courses/${lessonModalCourse._id}/lessons`, {
+          method: 'POST',
+          body: formData,
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
       }
+      if(!res.ok) throw new Error('Failed to save lesson');
       setLessonTitle(''); setLessonContent(''); setLessonVideo(null); setLessonEditId(null);
       fetchLessons(lessonModalCourse._id);
     } catch (err) {
@@ -205,7 +214,8 @@ const AdminDashboard = () => {
 
   const handleLessonDelete = async (lessonId) => {
     try {
-      await api.delete(`/admin/lessons/${lessonId}`, {
+      await fetch(`${API_PATH}/admin/lessons/${lessonId}`, {
+        method: 'DELETE',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchLessons(lessonModalCourse._id);
@@ -260,7 +270,7 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {courses.filter(course => course.published).map(course => (
                 <div key={course._id} className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl shadow p-5 flex flex-col border border-transparent hover:border-blue-300 hover:shadow-lg transition relative">
-                  {course.image && <img src={`http://localhost:5000${course.image}`} alt={course.title} className="rounded-xl mb-4 w-full h-32 object-cover" />}
+                  {course.image && <img src={`${API_BASE}${course.image}`} alt={course.title} className="rounded-xl mb-4 w-full h-32 object-cover" />}
                   <h4 className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2"><FaBookOpen className="text-purple-400" /> {course.title}</h4>
                   <p className="text-gray-600 mb-4 flex-1">{course.description}</p>
                   <div className="flex flex-col gap-2 mt-auto w-full">
@@ -307,7 +317,7 @@ const AdminDashboard = () => {
                   <label className="block mb-1 font-medium">Course Image</label>
                   <input type="file" accept="image/*" onChange={e => setEditImage(e.target.files[0])} />
                   {editCourse.image && !editImage && (
-                    <div className="mt-2"><img src={`http://localhost:5000${editCourse.image}`} alt={editCourse.title} className="w-24 h-16 object-cover rounded" /></div>
+                    <div className="mt-2"><img src={`${API_BASE}${editCourse.image}`} alt={editCourse.title} className="w-24 h-16 object-cover rounded" /></div>
                   )}
                   {editImage && <div className="text-sm text-gray-600 mt-1">Selected: {editImage.name}</div>}
                 </div>
@@ -356,7 +366,7 @@ const AdminDashboard = () => {
                       <span className="font-semibold text-gray-800">{lesson.title}</span>
                       {lesson.video && (
                         <video controls className="w-full md:w-48 mt-2 rounded-xl shadow">
-                          <source src={`http://localhost:5000${lesson.video}`} type="video/mp4" />
+                          <source src={`${API_BASE}${lesson.video}`} type="video/mp4" />
                           Your browser does not support the video tag.
                         </video>
                       )}

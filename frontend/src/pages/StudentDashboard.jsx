@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../api'
 import { FaUserGraduate, FaBookOpen, FaCheckCircle, FaPlusCircle } from 'react-icons/fa'
+
+const API_BASE = import.meta.env.MODE === 'development'
+  ? 'http://localhost:5000'
+  : 'https://adaptable-renewal.up.railway.app';
+
+const API_PATH = `${API_BASE}/api`;
 
 const StudentDashboard = () => {
   const [enrolledCourses, setEnrolledCourses] = useState([])
@@ -18,11 +23,11 @@ const StudentDashboard = () => {
     try {
       const token = localStorage.getItem('token')
       const [enrolledRes, availableRes] = await Promise.all([
-        api.get('/student/enrollments', { headers: { Authorization: `Bearer ${token}` } }),
-        api.get('/public/courses')
+        fetch(`${API_PATH}/student/enrollments`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_PATH}/public/courses`)
       ])
-      setEnrolledCourses(enrolledRes.data)
-      setAvailableCourses(availableRes.data)
+      setEnrolledCourses(await enrolledRes.json())
+      setAvailableCourses(await availableRes.json())
     } catch (err) {
       setError('Failed to fetch courses')
     }
@@ -38,7 +43,10 @@ const StudentDashboard = () => {
     setError(''); setSuccess('')
     try {
       const token = localStorage.getItem('token')
-      await api.post(`/student/courses/${courseId}/enroll`, {}, { headers: { Authorization: `Bearer ${token}` } })
+      await fetch(`${API_PATH}/student/courses/${courseId}/enroll`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      })
       setSuccess('Enrolled successfully!')
       fetchCourses()
     } catch (err) {
@@ -70,7 +78,7 @@ const StudentDashboard = () => {
                 <div key={enrollment._id} className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl shadow p-4 flex flex-col border border-transparent hover:border-blue-300 hover:shadow-lg transition relative">
                   {course && course.image && (
                     <img
-                      src={`http://localhost:5000${course.image}`}
+                      src={`${API_BASE}${course.image}`}
                       alt={course.title}
                       className="rounded mb-4 w-full h-32 object-cover"
                     />
@@ -100,7 +108,7 @@ const StudentDashboard = () => {
               <div key={course._id} className="bg-gradient-to-br from-green-100 to-blue-100 rounded-xl shadow p-4 flex flex-col border border-transparent hover:border-green-300 hover:shadow-lg transition relative">
                 {course.image && (
                   <img
-                    src={`http://localhost:5000${course.image}`}
+                    src={`${API_BASE}${course.image}`}
                     alt={course.title}
                     className="rounded mb-4 w-full h-32 object-cover"
                   />

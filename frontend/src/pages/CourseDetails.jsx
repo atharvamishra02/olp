@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import api from '../api'
 import { FaBookOpen, FaArrowLeft, FaCheckCircle, FaPlayCircle } from 'react-icons/fa'
+
+const API_BASE = import.meta.env.MODE === 'development'
+  ? 'http://localhost:5000'
+  : 'https://adaptable-renewal.up.railway.app';
+
+const API_PATH = `${API_BASE}/api`;
 
 const CourseDetails = () => {
   const { id } = useParams()
@@ -21,8 +26,8 @@ const CourseDetails = () => {
       setError('')
       try {
         // Fetch all published courses and find the one with this id
-        const res = await api.get('/public/courses')
-        const found = res.data.find(c => c._id === id)
+        const res = await fetch(`${API_PATH}/public/courses`)
+        const found = (await res.json()).find(c => c._id === id)
         setCourse(found)
         // Check user role
         const role = localStorage.getItem('role')
@@ -31,14 +36,15 @@ const CourseDetails = () => {
         let isEnrolled = false
         if (role === 'admin' && token) {
           // Admin: fetch all lessons for this course
-          const lessonsRes = await api.get(`/admin/courses/${id}/lessons`, { headers: { Authorization: `Bearer ${token}` } })
-          setLessons(lessonsRes.data)
+          const lessonsRes = await fetch(`${API_PATH}/admin/courses/${id}/lessons`, { headers: { Authorization: `Bearer ${token}` } })
+          setLessons(await lessonsRes.json())
           setEnrolled(false)
           setProgress({})
         } else if (token) {
           // Student: check if enrolled
-          const enrollmentsRes = await api.get('/student/enrollments', { headers: { Authorization: `Bearer ${token}` } })
-          isEnrolled = enrollmentsRes.data.some(e => {
+          const enrollmentsRes = await fetch(`${API_PATH}/student/enrollments`, { headers: { Authorization: `Bearer ${token}` } })
+          const enrollmentsData = await enrollmentsRes.json();
+          isEnrolled = enrollmentsData.some(e => {
             if (typeof e.course_id === 'object' && e.course_id !== null) {
               return e.course_id._id === id;
             }
@@ -46,14 +52,15 @@ const CourseDetails = () => {
           });
           setEnrolled(isEnrolled)
           if (isEnrolled) {
-            const lessonsRes = await api.get(`/student/courses/${id}/lessons`, { headers: { Authorization: `Bearer ${token}` } })
-            setLessons(lessonsRes.data)
+            const lessonsRes = await fetch(`${API_PATH}/student/courses/${id}/lessons`, { headers: { Authorization: `Bearer ${token}` } })
+            const lessonsData = await lessonsRes.json();
+            setLessons(lessonsData)
             // Fetch progress for each lesson
             const progressObj = {}
-            await Promise.all(lessonsRes.data.map(async (lesson) => {
+            await Promise.all(lessonsData.map(async (lesson) => {
               try {
-                const progRes = await api.get(`/student/lessons/${lesson._id}/progress`, { headers: { Authorization: `Bearer ${token}` } })
-                progressObj[lesson._id] = progRes.data.completed
+                const progRes = await fetch(`${API_PATH}/student/lessons/${lesson._id}/progress`, { headers: { Authorization: `Bearer ${token}` } })
+                progressObj[lesson._id] = (await progRes.json()).completed
               } catch {
                 progressObj[lesson._id] = false
               }
@@ -61,14 +68,14 @@ const CourseDetails = () => {
             setProgress(progressObj)
           } else {
             // Not enrolled: fetch public lessons
-            const lessonsRes = await api.get(`/public/courses/${id}/lessons`)
-            setLessons(lessonsRes.data)
+            const lessonsRes = await fetch(`${API_PATH}/public/courses/${id}/lessons`)
+            setLessons(await lessonsRes.json())
             setProgress({})
           }
         } else {
           // Not logged in: fetch public lessons
-          const lessonsRes = await api.get(`/public/courses/${id}/lessons`)
-          setLessons(lessonsRes.data)
+          const lessonsRes = await fetch(`${API_PATH}/public/courses/${id}/lessons`)
+          setLessons(await lessonsRes.json())
           setProgress({})
         }
       } catch (err) {
@@ -83,7 +90,10 @@ const CourseDetails = () => {
     setError(''); setSuccess('')
     try {
       const token = localStorage.getItem('token')
-      await api.post(`/student/courses/${id}/enroll`, {}, { headers: { Authorization: `Bearer ${token}` } })
+      await fetch(`${API_PATH}/student/courses/${id}/enroll`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      })
       setSuccess('Enrolled successfully!')
       setEnrolled(true)
       setTimeout(() => navigate('/student'), 1000)
@@ -96,7 +106,10 @@ const CourseDetails = () => {
   const handleLessonComplete = async (lessonId) => {
     try {
       const token = localStorage.getItem('token');
-      await api.post(`/student/lessons/${lessonId}/progress`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`${API_PATH}/student/lessons/${lessonId}/progress`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setProgress(prev => ({ ...prev, [lessonId]: true }));
     } catch (err) {
       // Optionally, show error
@@ -128,7 +141,7 @@ const CourseDetails = () => {
         <h2 className="text-3xl md:text-4xl font-extrabold text-purple-700 mb-2 flex items-center justify-center gap-2">
           <FaBookOpen className="inline-block text-blue-400" /> {course.title}
         </h2>
-        {course.image && <img src={`http://localhost:5000${course.image}`} alt={course.title} className="rounded-xl mb-4 w-full h-56 object-cover shadow-lg mx-auto" />}
+        {course.image && <img src={`${API_BASE}${course.image}`} alt={course.title} className="rounded-xl mb-4 w-full h-56 object-cover shadow-lg mx-auto" />}
         <p className="mb-4 text-gray-700 text-lg">{course.description}</p>
       </div>
       <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 mb-8">
@@ -169,7 +182,7 @@ const CourseDetails = () => {
                   <video controls className="w-full mt-2 rounded-xl shadow" onEnded={() => {
                     if (!progress[lesson._id]) handleLessonComplete(lesson._id);
                   }}>
-                    <source src={`http://localhost:5000${lesson.video}`} type="video/mp4" />
+                    <source src={`${API_BASE}${lesson.video}`} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                 )}
