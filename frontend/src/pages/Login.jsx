@@ -9,11 +9,16 @@ const Login = () => {
   const [role, setRole] = useState('student');
   const navigate = useNavigate();
 
+  const API_BASE =
+    import.meta.env.MODE === "development"
+      ? "/api"
+      : "https://adaptable-renewal.up.railway.app/api";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, role }),
