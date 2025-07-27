@@ -25,7 +25,7 @@ const Login = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Login failed');
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('token', data.accessToken); // Changed from data.token to data.accessToken
       localStorage.setItem('role', data.user.role);
       // Navigate to dashboard based on selected role
       navigate(role === 'admin' ? '/admin' : '/student');

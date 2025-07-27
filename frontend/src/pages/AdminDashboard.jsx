@@ -30,6 +30,24 @@ const AdminDashboard = () => {
   const [lessonEditId, setLessonEditId] = useState(null);
   const [courseLessons, setCourseLessons] = useState([{ title: '', content: '', video: null }]);
 
+  // Debug: Check authentication status
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+  const isAuthenticated = token && role === 'admin';
+
+  // Redirect if not authenticated as admin
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    navigate('/login');
+  };
+
   const fetchCourses = async () => {
     try {
       const res = await fetch(`${API_PATH}/admin/courses?ts=${Date.now()}`, {
@@ -78,6 +96,11 @@ const AdminDashboard = () => {
       formData.append('description', description);
       formData.append('published', published);
       if (image) formData.append('image', image);
+      
+      console.log('🚀 Attempting to create course...');
+      console.log('📡 API URL:', `${API_PATH}/admin/courses`);
+      console.log('🔑 Token:', localStorage.getItem('token') ? 'Present' : 'Missing');
+      
       const res = await fetch(`${API_PATH}/admin/courses`, {
         method: 'POST',
         headers: {
@@ -85,8 +108,14 @@ const AdminDashboard = () => {
         },
         body: formData
       })
+      
+      console.log('📊 Response status:', res.status);
+      console.log('📊 Response headers:', Object.fromEntries(res.headers.entries()));
+      
       const data = await res.json()
-      if (!res.ok) throw new Error(data.message || 'Failed to create course')
+      console.log('📄 Response data:', data);
+      
+      if (!res.ok) throw new Error(data.message || `Failed to create course (Status: ${res.status})`)
       const courseId = data._id;
       if (!courseId) throw new Error('Could not retrieve course ID after creation.');
       // If lessons were added, submit them
@@ -109,6 +138,7 @@ const AdminDashboard = () => {
       setCourseLessons([{ title: '', content: '', video: null }]);
       setTimeout(() => navigate('/'), 1000)
     } catch (err) {
+      console.error('❌ Error creating course:', err);
       setError(err.message)
     }
   }
@@ -226,6 +256,34 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-100 pb-12">
+      {/* Debug Section */}
+      <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 mb-4">
+          <h3 className="font-bold text-yellow-800 mb-2">🔍 Debug Information:</h3>
+          <div className="text-sm text-yellow-700 space-y-1">
+            <div><strong>Token:</strong> {token ? `${token.substring(0, 20)}...` : '❌ Missing'}</div>
+            <div><strong>Role:</strong> {role || '❌ Missing'}</div>
+            <div><strong>Authenticated as Admin:</strong> {isAuthenticated ? '✅ Yes' : '❌ No'}</div>
+            <div><strong>API Base:</strong> {API_BASE}</div>
+            <div><strong>API Path:</strong> {API_PATH}</div>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <button 
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+            >
+              🚪 Logout
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+            >
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+      
       {/* Hero Section */}
       <div className="max-w-2xl mx-auto py-10 px-4 text-center">
         <h1 className="text-4xl md:text-5xl font-extrabold text-blue-700 mb-4 flex items-center justify-center gap-3">

@@ -32,7 +32,7 @@ const Register = () => {
       }
       if (!res.ok) throw new Error(data.message || 'Registration failed');
       // Immediately log in and redirect
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('token', data.accessToken); // Changed from data.token to data.accessToken
       localStorage.setItem('role', data.user.role);
       navigate(role === 'admin' ? '/admin' : '/student');
     } catch (err) {
