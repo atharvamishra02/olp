@@ -65,7 +65,8 @@ const AdminDashboard = () => {
       const res = await fetch(`${API_PATH}/admin/courses/${courseId}/lessons`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      setLessons(res.data);
+      const data = await res.json();
+      setLessons(data);
     } catch {
       setLessons([]);
     }
