@@ -16,9 +16,8 @@ connectDB();
 // Middleware
 app.use(cors({
   origin: [
-    'http://localhost:5173', 
-    'https://olp2.up.railway.app',
-    'https://adaptable-renewal.up.railway.app' // Frontend domain
+    'http://localhost:5173',
+    'https://olp2.up.railway.app'
   ],
   credentials: true,
 }));
@@ -31,13 +30,20 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/student', require('./routes/student'));
 app.use('/api/public', require('./routes/public'));
 
+// Serve static files from the React app build directory
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
 app.get('/', (req, res) => {
-  res.send('Online Learning Platform API (Running on Railway)');
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
-// Catch-all for non-API routes
+// Catch-all handler: send back React's index.html file for any non-API routes
 app.get('*', (req, res) => {
-  res.status(404).send('API route not found');
+  // Don't serve index.html for API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
 
 // Start server

@@ -4,7 +4,7 @@ import { FaBookOpen, FaArrowLeft, FaCheckCircle, FaPlayCircle } from 'react-icon
 
 const API_BASE = import.meta.env.MODE === 'development'
   ? 'http://localhost:5000'
-  : 'https://olp2.up.railway.app';
+  : '';
 
 const API_PATH = `${API_BASE}/api`;
 

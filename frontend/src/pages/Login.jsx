@@ -12,7 +12,7 @@ const Login = () => {
   const API_BASE =
     import.meta.env.MODE === "development"
       ? "/api"
-      : "https://olp2.up.railway.app/api";
+      : "/api";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
