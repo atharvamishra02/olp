@@ -11,8 +11,8 @@ const Login = () => {
 
   const API_BASE =
     import.meta.env.MODE === "development"
-      ? "/api"
-      : "/api";
+      ? "http://localhost:5000/api"
+      : "https://adaptable-renewal.up.railway.app/api";
 
   const handleSubmit = async (e) => {
     e.preventDefault();

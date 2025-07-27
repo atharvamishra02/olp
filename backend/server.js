@@ -17,7 +17,8 @@ connectDB();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://olp2.up.railway.app'
+    'https://olp2.up.railway.app',
+    'https://adaptable-renewal.up.railway.app'
   ],
   credentials: true,
 }));

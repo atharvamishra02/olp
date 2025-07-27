@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import api from '../api'
+import api, { API_BASE } from '../api'
 import { useNavigate } from 'react-router-dom'
 import { FaBookOpen, FaStar } from 'react-icons/fa'
 
@@ -47,7 +47,7 @@ const Home = () => {
           {courses.length === 0 && <div className="text-gray-500 col-span-full text-center">No courses found.</div>}
           {courses.map(course => (
             <div key={course._id} className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-shadow p-5 flex flex-col border border-transparent hover:border-blue-200 relative group">
-              {course.image && <img src={`http://localhost:5000${course.image}`} alt={course.title} className="rounded-xl mb-4 w-full h-40 object-cover group-hover:scale-105 transition-transform" />}
+              {course.image && <img src={`${API_BASE}${course.image}`} alt={course.title} className="rounded-xl mb-4 w-full h-40 object-cover group-hover:scale-105 transition-transform" />}
               <h3 className="text-xl font-bold mb-2 text-blue-700 flex items-center gap-2">
                 <FaBookOpen className="text-purple-400" /> {course.title}
               </h3>
