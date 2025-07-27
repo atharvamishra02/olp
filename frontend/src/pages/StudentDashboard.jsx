@@ -79,7 +79,7 @@ const StudentDashboard = () => {
                 <div key={enrollment._id} className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl shadow p-4 flex flex-col border border-transparent hover:border-blue-300 hover:shadow-lg transition relative">
                   {course && course.image && (
                     <img
-                      src={`${API_BASE}${course.image}`}
+                      src={course.image.startsWith('http') ? course.image : `${API_BASE}${course.image}`}
                       alt={course.title}
                       className="rounded mb-4 w-full h-32 object-cover"
                     />
@@ -109,7 +109,7 @@ const StudentDashboard = () => {
               <div key={course._id} className="bg-gradient-to-br from-green-100 to-blue-100 rounded-xl shadow p-4 flex flex-col border border-transparent hover:border-green-300 hover:shadow-lg transition relative">
                 {course.image && (
                   <img
-                    src={`${API_BASE}${course.image}`}
+                    src={course.image.startsWith('http') ? course.image : `${API_BASE}${course.image}`}
                     alt={course.title}
                     className="rounded mb-4 w-full h-32 object-cover"
                   />

@@ -328,7 +328,7 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {courses.filter(course => course.published).map(course => (
                 <div key={course._id} className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl shadow p-5 flex flex-col border border-transparent hover:border-blue-300 hover:shadow-lg transition relative">
-                  {course.image && <img src={`${API_BASE}${course.image}`} alt={course.title} className="rounded-xl mb-4 w-full h-32 object-cover" />}
+                  {course.image && <img src={course.image.startsWith('http') ? course.image : `${API_BASE}${course.image}`} alt={course.title} className="rounded-xl mb-4 w-full h-32 object-cover" />}
                   <h4 className="text-lg font-bold mb-2 text-blue-700 flex items-center gap-2"><FaBookOpen className="text-purple-400" /> {course.title}</h4>
                   <p className="text-gray-600 mb-4 flex-1">{course.description}</p>
                   <div className="flex flex-col gap-2 mt-auto w-full">
@@ -375,7 +375,7 @@ const AdminDashboard = () => {
                   <label className="block mb-1 font-medium">Course Image</label>
                   <input type="file" accept="image/*" onChange={e => setEditImage(e.target.files[0])} />
                   {editCourse.image && !editImage && (
-                    <div className="mt-2"><img src={`${API_BASE}${editCourse.image}`} alt={editCourse.title} className="w-24 h-16 object-cover rounded" /></div>
+                    <div className="mt-2"><img src={editCourse.image.startsWith('http') ? editCourse.image : `${API_BASE}${editCourse.image}`} alt={editCourse.title} className="w-24 h-16 object-cover rounded" /></div>
                   )}
                   {editImage && <div className="text-sm text-gray-600 mt-1">Selected: {editImage.name}</div>}
                 </div>
@@ -424,7 +424,7 @@ const AdminDashboard = () => {
                       <span className="font-semibold text-gray-800">{lesson.title}</span>
                       {lesson.video && (
                         <video controls className="w-full md:w-48 mt-2 rounded-xl shadow">
-                          <source src={`${API_BASE}${lesson.video}`} type="video/mp4" />
+                          <source src={lesson.video.startsWith('http') ? lesson.video : `${API_BASE}${lesson.video}`} type="video/mp4" />
                           Your browser does not support the video tag.
                         </video>
                       )}
