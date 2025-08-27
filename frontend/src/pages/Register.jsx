@@ -13,7 +13,7 @@ const Register = () => {
   const API_BASE =
   import.meta.env.MODE === "development"
     ? "http://localhost:5000/api"
-    : "https://olp2.vercel.app/api";
+    : "https://olp5.vercel.app/api";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
