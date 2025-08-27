@@ -1,6 +1,6 @@
 const API_BASE = import.meta.env.MODE === 'development'
   ? 'http://localhost:5000'
-  : 'https://adaptable-renewal.up.railway.app';
+  : 'https://olp5.vercel.app';
 
 const API_PATH = `${API_BASE}/api`;
 
