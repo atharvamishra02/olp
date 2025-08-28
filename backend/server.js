@@ -18,9 +18,17 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://olp2.vercel.app',
+    'https://olp5.vercel.app',
   ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Explicitly handle OPTIONS preflight requests for all routes
+app.options('*', cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
