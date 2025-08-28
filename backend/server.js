@@ -38,6 +38,16 @@ app.get('/', (req, res) => {
 });
 
 // Catch-all handler: send back React's index.html file for any non-API routes
+
+// Global error handler to always return JSON
+app.use((err, req, res, next) => {
+  console.error('Global error:', err);
+  res.status(err.status || 500).json({
+    message: err.message || 'Internal Server Error',
+    error: err.stack || err
+  });
+});
+
 app.get('*', (req, res) => {
   // Don't serve index.html for API routes
   if (req.path.startsWith('/api/')) {

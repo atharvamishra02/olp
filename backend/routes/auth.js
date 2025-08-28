@@ -52,14 +52,14 @@ router.post('/login', async (req, res) => {
   try {
     const user = await User.findUserByUsername(username);
     console.log('User.findUserByUsername result', user);
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!user) return res.status(400).json({ message: 'Invalid credentials', details: 'User not found' });
     if (role && user.role !== role) {
       console.log('Role mismatch', { expected: user.role, got: role });
-      return res.status(403).json({ message: 'Role mismatch' });
+      return res.status(403).json({ message: 'Role mismatch', expected: user.role, got: role });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     console.log('bcrypt.compare result', isMatch);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials', details: 'Password mismatch' });
     // Issue access token (no expiry)
     const accessToken = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
@@ -78,8 +78,8 @@ router.post('/login', async (req, res) => {
       user: { id: user.id, username: user.username, role: user.role }
     });
   } catch (err) {
-    console.log('Login error', err);
-    res.status(500).json({ message: 'Server error' });
+  console.log('Login error', err);
+  res.status(500).json({ message: 'Server error', error: err.message || err });
   }
 });
 
