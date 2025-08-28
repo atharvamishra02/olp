@@ -4,7 +4,7 @@ import { FaUserGraduate, FaBookOpen, FaCheckCircle, FaPlusCircle } from 'react-i
 
 const API_BASE = import.meta.env.MODE === 'development'
   ? 'http://localhost:5000'
-  : 'https://olp5.vercel.app/';
+  : 'https://olp5.vercel.app';
 
 const API_PATH = `${API_BASE}/api`;
 
